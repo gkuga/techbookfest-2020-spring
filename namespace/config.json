@@ -1,0 +1,34 @@
+{
+  "root": {
+    "path": "rootfs",
+    "readonly": true
+  },
+  "process": {
+    "args": [
+      "sh"
+    ],
+    "env": [
+      "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "TERM=xterm"
+    ]
+  },
+  "linux": {
+    "namespaces": [
+      {
+        "type": "pid"
+      },
+      {
+        "type": "network"
+      },
+      {
+        "type": "ipc"
+      },
+      {
+        "type": "uts"
+      },
+      {
+        "type": "mount"
+      }
+    ]
+  }
+}

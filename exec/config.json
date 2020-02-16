@@ -5,7 +5,7 @@
   },
   "process": {
     "args": [
-      "echo", "Hello, world!"
+      "sh"
     ],
     "env": [
       "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
