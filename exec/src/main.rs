@@ -5,9 +5,9 @@ use nix::unistd;
 use std::fs::File;
 use std::io::BufReader;
 
+mod nix_ext;
 mod spec;
 mod utils;
-mod nix_ext;
 
 fn main() {
     let file = File::open("config.json").unwrap();
@@ -19,9 +19,5 @@ fn main() {
     unistd::chroot(&rootfs[..]).unwrap();
     unistd::chdir(&rootfs[..]).unwrap();
 
-    utils::do_exec(
-        &spec.process.args[0],
-        &spec.process.args,
-        &spec.process.env,
-    );
+    utils::do_exec(&spec.process.args[0], &spec.process.args, &spec.process.env);
 }

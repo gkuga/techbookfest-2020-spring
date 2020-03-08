@@ -1,6 +1,6 @@
 extern crate nix;
 
-use nix::unistd;
+use nix::{sched, sys, unistd};
 
 use std::fs::File;
 use std::io::BufReader;
@@ -20,17 +20,17 @@ fn main() {
     unistd::chdir(&rootfs[..]).unwrap();
 
     let linux = &spec.linux.as_ref().unwrap();
-    let mut cf = nix::sched::CloneFlags::empty();
+    let mut cf = sched::CloneFlags::empty();
     for ns in &linux.namespaces {
-        let space = nix::sched::CloneFlags::from_bits_truncate(ns.typ as i32);
+        let space = sched::CloneFlags::from_bits_truncate(ns.typ as i32);
         cf |= space;
     }
-    nix::sched::unshare(cf).unwrap();
+    sched::unshare(cf).unwrap();
 
-    match nix::unistd::fork().unwrap() {
-        nix::unistd::ForkResult::Child => {}
-        nix::unistd::ForkResult::Parent { child } => {
-            match nix::sys::wait::waitpid(child, None) {
+    match unistd::fork().unwrap() {
+        unistd::ForkResult::Child => {}
+        unistd::ForkResult::Parent { child } => {
+            match sys::wait::waitpid(child, None) {
                 Ok(status) => println!("Child exited ({:?}).", status),
                 Err(_) => println!("waitpid() failed"),
             }

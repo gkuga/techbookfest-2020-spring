@@ -2,8 +2,8 @@ extern crate nix;
 #[macro_use]
 extern crate lazy_static;
 
-use nix::unistd;
 use nix::mount::MsFlags;
+use nix::{mount, sched, sys, unistd};
 
 use std::fs::File;
 use std::io::BufReader;
@@ -21,17 +21,17 @@ fn main() {
     let rootfs = spec.root.path;
 
     let linux = &spec.linux.as_ref().unwrap();
-    let mut cf = nix::sched::CloneFlags::empty();
+    let mut cf = sched::CloneFlags::empty();
     for ns in &linux.namespaces {
-        let space = nix::sched::CloneFlags::from_bits_truncate(ns.typ as i32);
+        let space = sched::CloneFlags::from_bits_truncate(ns.typ as i32);
         cf |= space;
     }
-    nix::sched::unshare(cf).unwrap();
+    sched::unshare(cf).unwrap();
 
-    match nix::unistd::fork().unwrap() {
-        nix::unistd::ForkResult::Child => {}
-        nix::unistd::ForkResult::Parent { child } => {
-            match nix::sys::wait::waitpid(child, None) {
+    match unistd::fork().unwrap() {
+        unistd::ForkResult::Child => {}
+        unistd::ForkResult::Parent { child } => {
+            match sys::wait::waitpid(child, None) {
                 Ok(status) => println!("Child exited ({:?}).", status),
                 Err(_) => println!("waitpid() failed"),
             }
@@ -39,7 +39,7 @@ fn main() {
         }
     };
 
-    nix::mount::mount(
+    mount::mount(
         None::<&str>,
         "/",
         None::<&str>,
@@ -52,7 +52,7 @@ fn main() {
         let (flags, data) = mounts::parse_mount(m);
         let dest = format! {"{}{}", &rootfs, &m.destination};
         std::fs::create_dir_all(&dest).unwrap();
-        nix::mount::mount(Some(&*m.source), &*dest, Some(&*m.typ), flags, Some(&*data)).unwrap();
+        mount::mount(Some(&*m.source), &*dest, Some(&*m.typ), flags, Some(&*data)).unwrap();
     }
 
     unistd::chroot(&rootfs[..]).unwrap();
